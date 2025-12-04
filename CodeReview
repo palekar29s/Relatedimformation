@@ -1,0 +1,82 @@
+public List<ReviewsClass> GetReviews()
+{
+    List<ReviewsClass> reviews = new List<ReviewsClass>();
+
+    using (SqlConnection con = new SqlConnection(_connectionString))
+    {
+        con.Open();
+
+        string query = @"SELECT ReviewId, UserId, VehicleId, Rating, Comment, CreatedAt 
+                         FROM Reviews";
+
+        using (SqlCommand cmd = new SqlCommand(query, con))
+        using (SqlDataReader reader = cmd.ExecuteReader())
+        {
+            while (reader.Read())
+            {
+                reviews.Add(new ReviewsClass
+                {
+                    ReviewId = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    VehicleId = reader.GetInt32(2),
+                    Rating = reader.GetInt32(3),
+                    Comment = reader.GetString(4),
+                    CreatedAt = reader.GetDateTime(5)
+                });
+            }
+        }
+    }
+
+    return reviews;
+}
+public void InsertReview(ReviewsClass review)
+{
+    using (SqlConnection con = new SqlConnection(_connectionString))
+    {
+        con.Open();
+
+        string query = @"INSERT INTO Reviews 
+                        (UserId, VehicleId, Rating, Comment, CreatedAt)
+                         VALUES 
+                        (@UserId, @VehicleId, @Rating, @Comment, @CreatedAt)";
+
+        using (SqlCommand cmd = new SqlCommand(query, con))
+        {
+            cmd.Parameters.AddWithValue("@UserId", review.UserId);
+            cmd.Parameters.AddWithValue("@VehicleId", review.VehicleId);
+            cmd.Parameters.AddWithValue("@Rating", review.Rating);
+            cmd.Parameters.AddWithValue("@Comment", review.Comment);
+            cmd.Parameters.AddWithValue("@CreatedAt", review.CreatedAt);
+
+            cmd.ExecuteNonQuery();
+        }
+    }
+}
+//all the endpoint of review 
+
+        [HttpGet("get-review")]
+        public ActionResult<List<ReviewsClass>> Getallreview()
+        {
+            var resut = _database.getpayement();
+            return Ok(resut);
+        }
+
+        [HttpPost("add-review")]
+        public IActionResult Insertreviews([FromBody] ReviewsClass review)
+        {
+            if (review == null)
+            {
+                return BadRequest("Employee data is required.");
+            }
+
+            try
+            {
+                _database.Insertreviews(review);
+                return Ok("Employee and login inserted successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Log exception (if logging is set up)
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
