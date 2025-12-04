@@ -1,0 +1,29 @@
+[HttpGet]
+    public IActionResult GetAllImages()
+    {
+        var images = _database.GetImages();
+        return Ok(images);
+    }
+
+    // ------------------------------------------------------
+    // GET images by VehicleId
+    // ------------------------------------------------------
+    [HttpGet("vehicle/{vehicleId}")]
+    public IActionResult GetImagesByVehicleId(int vehicleId)
+    {
+        var images = _database.GetImagesByVehicleId(vehicleId);
+        return Ok(images);
+    }
+
+    // ------------------------------------------------------
+    // POST add new image (byte[] from body)
+    // ------------------------------------------------------
+    [HttpPost]
+    public IActionResult InsertImage([FromBody] ImageClass image)
+    {
+        if (image == null)
+            return BadRequest("Image data is required.");
+
+        _database.InsertVehicleImage(image);
+        return Ok("Image inserted successfully.");
+    }
